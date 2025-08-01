@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View, SafeAreaView, Platform, ScrollView } from "react-native";
+import { StyleSheet, View, SafeAreaView, Platform, ScrollView, Text } from "react-native";
 import { H1, H2, Body, BodySmall } from "@/components/ui/Typography";
 import { colors, spacing, borderRadius, shadows } from "@/constants/theme";
 import { Button } from "@/components/ui/Button";
@@ -7,13 +7,6 @@ import { router, Stack } from "expo-router";
 import { useAuth } from "@/hooks/useAuth";
 import { useSkincare } from "@/hooks/useSkincare";
 import { BlurView } from "expo-blur";
-import { 
-  Clock,
-  Award,
-  AlertTriangle,
-  Activity
-} from "lucide-react-native";
-
 export default function PlanTeaserScreen() {
   const { user } = useAuth();
   const { skinScore } = useSkincare();
@@ -52,20 +45,20 @@ export default function PlanTeaserScreen() {
             {/* Stats Grid */}
             <View style={styles.statsGrid}>
               <View style={styles.mainStat}>
-                <Award size={24} color={colors.primary} />
+                <Text style={{ fontSize: 20 }}>🏆</Text>
                 <H2 style={styles.statNumber}>{skinScore?.overall || 72}</H2>
                 <BodySmall style={styles.statLabel}>Skin Score</BodySmall>
               </View>
               
               <View style={styles.subStats}>
                 <View style={styles.subStat}>
-                  <Clock size={18} color={colors.text.secondary} />
+                  <Text style={{ fontSize: 20 }}>⏰</Text>
                   <Body style={styles.subStatValue}>6-8 weeks</Body>
                   <BodySmall style={styles.subStatLabel}>Improvement</BodySmall>
                 </View>
                 
                 <View style={styles.subStat}>
-                  <Activity size={18} color={colors.warning} />
+                  <Text style={{ fontSize: 20 }}>📊</Text>
                   <Body style={styles.subStatValue}>Moderate</Body>
                   <BodySmall style={styles.subStatLabel}>Severity</BodySmall>
                 </View>

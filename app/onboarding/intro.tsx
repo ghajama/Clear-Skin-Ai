@@ -1,11 +1,9 @@
 import React from "react";
-import { StyleSheet, View, Image, SafeAreaView } from "react-native";
+import { StyleSheet, View, Image, SafeAreaView, Text } from "react-native";
 import { H2, H3, Body } from "@/components/ui/Typography";
 import { colors, spacing, borderRadius } from "@/constants/theme";
 import { Button } from "@/components/ui/Button";
 import { router } from "expo-router";
-import { FileText, Sparkles, BarChart2 } from "lucide-react-native";
-
 export default function IntroScreen() {
   const handleStart = () => {
     router.push("/onboarding/scan-front");
@@ -19,7 +17,7 @@ export default function IntroScreen() {
         <View style={styles.stepsContainer}>
           <View style={styles.step}>
             <View style={styles.iconContainer}>
-              <FileText size={32} color={colors.primary} />
+              <Text style={{ fontSize: 20 }}>📄</Text>
             </View>
             <View style={styles.stepContent}>
               <H3 style={styles.stepTitle}>Quick Quiz</H3>
@@ -31,7 +29,7 @@ export default function IntroScreen() {
 
           <View style={styles.step}>
             <View style={styles.iconContainer}>
-              <Sparkles size={32} color={colors.primary} />
+              <Text style={{ fontSize: 20 }}>✨</Text>
             </View>
             <View style={styles.stepContent}>
               <H3 style={styles.stepTitle}>AI Analysis</H3>
@@ -43,7 +41,7 @@ export default function IntroScreen() {
 
           <View style={styles.step}>
             <View style={styles.iconContainer}>
-              <BarChart2 size={32} color={colors.primary} />
+              <Text style={{ fontSize: 20 }}>📊</Text>
             </View>
             <View style={styles.stepContent}>
               <H3 style={styles.stepTitle}>Custom Plan</H3>

@@ -1,3 +1,6 @@
+// Re-export common types
+export * from './common';
+
 export type QuizQuestion = {
   id: string;
   question: string;
@@ -73,3 +76,39 @@ export type Testimonial = {
   afterImage: string;
   improvement: number;
 };
+
+// Scan types
+export interface ScanImage {
+  uri: string;
+  shouldMirror?: boolean;
+  timestamp?: number;
+}
+
+export interface ScanResults {
+  front?: ScanImage;
+  right?: ScanImage;
+  left?: ScanImage;
+}
+
+// Product types
+export interface Product {
+  id: string;
+  name: string;
+  brand: string;
+  type: string;
+  ingredients: string[];
+  price?: number;
+  rating?: number;
+}
+
+// User types (unified)
+export interface User {
+  id: string;
+  email: string;
+  name?: string;
+  avatar?: string;
+  createdAt: string;
+  quizCompleted?: boolean;
+  skinScore?: SkinScore;
+  subscribed?: boolean;
+}

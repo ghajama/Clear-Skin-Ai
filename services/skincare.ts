@@ -6,10 +6,16 @@ export const skincareService = {
     // Mock analysis - in a real app, this would use AI
     const mockScore: SkinScore = {
       overall: Math.floor(Math.random() * 30) + 70, // 70-100
+      acne: Math.floor(Math.random() * 40) + 60, // 60-100
       hydration: Math.floor(Math.random() * 40) + 60, // 60-100
-      texture: Math.floor(Math.random() * 35) + 65, // 65-100
-      pigmentation: Math.floor(Math.random() * 25) + 75, // 75-100
-      sensitivity: Math.floor(Math.random() * 20) + 80, // 80-100
+      sunDamage: Math.floor(Math.random() * 35) + 65, // 65-100
+      dryness: Math.floor(Math.random() * 25) + 75, // 75-100
+      recommendations: [
+        'Use a gentle cleanser twice daily',
+        'Apply moisturizer while skin is damp',
+        'Use SPF 30+ sunscreen daily'
+      ],
+      issues: []
     };
 
     // Simulate API delay
@@ -26,7 +32,7 @@ export const skincareService = {
       },
       {
         role: 'user' as const,
-        content: `Based on my skin analysis (Overall: ${skinScore.overall}, Hydration: ${skinScore.hydration}, Texture: ${skinScore.texture}, Pigmentation: ${skinScore.pigmentation}, Sensitivity: ${skinScore.sensitivity}) and my quiz answers: ${JSON.stringify(quizAnswers)}, please create a personalized skincare routine.`,
+        content: `Based on my skin analysis (Overall: ${skinScore.overall}, Acne: ${skinScore.acne}, Hydration: ${skinScore.hydration}, Sun Damage: ${skinScore.sunDamage}, Dryness: ${skinScore.dryness}) and my quiz answers: ${JSON.stringify(quizAnswers)}, please create a personalized skincare routine.`,
       },
     ];
 
@@ -47,19 +53,19 @@ export const skincareService = {
       tips.push('Apply moisturizer while skin is still damp');
     }
 
-    if (skinScore.texture < 75) {
+    if (skinScore.acne > 30) {
       tips.push('Consider gentle exfoliation 2-3 times per week');
-      tips.push('Use products with niacinamide to improve texture');
+      tips.push('Use products with salicylic acid for acne control');
     }
 
-    if (skinScore.pigmentation < 80) {
+    if (skinScore.sunDamage > 30) {
       tips.push('Use vitamin C serum in the morning');
       tips.push('Always apply SPF 30+ sunscreen');
     }
 
-    if (skinScore.sensitivity > 90) {
+    if (skinScore.dryness > 30) {
       tips.push('Choose fragrance-free products');
-      tips.push('Patch test new products before full application');
+      tips.push('Use a rich moisturizer with ceramides');
     }
 
     return tips.length > 0 ? tips : [

@@ -1,10 +1,123 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
-const supabaseUrl = 'https://sogmridxuwqulqxtpoqp.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvZ21yaWR4dXdxdWxxeHRwb3FwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4NjA1NjYsImV4cCI6MjA2ODQzNjU2Nn0.t7Pm0qLVFAMX17HyKSaGfKFWN5ByyL_MqNTd3Fo_gSA';
+// Database type definitions
+export type Database = {
+  public: {
+    Tables: {
+      profiles: {
+        Row: {
+          id: string;
+          email: string;
+          name: string | null;
+          quiz_completed: boolean;
+          subscribed: boolean;
+          skin_score: number | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          email: string;
+          name?: string | null;
+          quiz_completed?: boolean;
+          subscribed?: boolean;
+          skin_score?: number | null;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          name?: string | null;
+          quiz_completed?: boolean;
+          subscribed?: boolean;
+          skin_score?: number | null;
+          updated_at?: string;
+        };
+      };
+      quiz_answers: {
+        Row: {
+          id: string;
+          user_id: string;
+          question_id: string;
+          answer_id: string;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          question_id: string;
+          answer_id: string;
+        };
+        Update: {
+          answer_id?: string;
+        };
+      };
+      scan_sessions: {
+        Row: {
+          id: string;
+          user_id: string;
+          front_image_url: string | null;
+          right_image_url: string | null;
+          left_image_url: string | null;
+          analysis_result: any | null;
+          completed: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          front_image_url?: string | null;
+          right_image_url?: string | null;
+          left_image_url?: string | null;
+          analysis_result?: any | null;
+          completed?: boolean;
+        };
+        Update: {
+          front_image_url?: string | null;
+          right_image_url?: string | null;
+          left_image_url?: string | null;
+          analysis_result?: any | null;
+          completed?: boolean;
+          updated_at?: string;
+        };
+      };
+      routine_progress: {
+        Row: {
+          id: string;
+          user_id: string;
+          step_id: string;
+          completed: boolean;
+          completed_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          step_id: string;
+          completed?: boolean;
+          completed_at?: string | null;
+        };
+        Update: {
+          completed?: boolean;
+          completed_at?: string | null;
+        };
+      };
+    };
+  };
+};
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+// Get environment variables - NO FALLBACKS for security
+const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl ||
+                   process.env.EXPO_PUBLIC_SUPABASE_URL;
+
+const supabaseAnonKey = Constants.expoConfig?.extra?.supabaseAnonKey ||
+                       process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+// Validate environment variables
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables. Please check your .env file.');
+}
+
+export const supabase: SupabaseClient<Database> = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     // For React Native, we need to handle storage differently
     storage: Platform.OS === 'web' ? undefined : {
@@ -72,144 +185,7 @@ export const initializeSupabase = async () => {
   }
 };
 
-// Database types
-export interface Database {
-  public: {
-    Tables: {
-      profiles: {
-        Row: {
-          id: string;
-          email: string;
-          name: string | null;
-          avatar_url: string | null;
-          quiz_completed: boolean;
-          subscribed: boolean;
-          skin_score: number | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id: string;
-          email: string;
-          name?: string | null;
-          avatar_url?: string | null;
-          quiz_completed?: boolean;
-          subscribed?: boolean;
-          skin_score?: number | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          email?: string;
-          name?: string | null;
-          avatar_url?: string | null;
-          quiz_completed?: boolean;
-          subscribed?: boolean;
-          skin_score?: number | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
-      scan_sessions: {
-        Row: {
-          id: string;
-          user_id: string;
-          front_image_url: string | null;
-          right_image_url: string | null;
-          left_image_url: string | null;
-          analysis_result: any | null;
-          completed: boolean;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          front_image_url?: string | null;
-          right_image_url?: string | null;
-          left_image_url?: string | null;
-          analysis_result?: any | null;
-          completed?: boolean;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          front_image_url?: string | null;
-          right_image_url?: string | null;
-          left_image_url?: string | null;
-          analysis_result?: any | null;
-          completed?: boolean;
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
-      quiz_answers: {
-        Row: {
-          id: string;
-          user_id: string;
-          question_id: string;
-          answer_id: string;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          question_id: string;
-          answer_id: string;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          question_id?: string;
-          answer_id?: string;
-          created_at?: string;
-        };
-      };
-      routine_progress: {
-        Row: {
-          id: string;
-          user_id: string;
-          step_id: string;
-          completed: boolean;
-          completed_at: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          step_id: string;
-          completed?: boolean;
-          completed_at?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          step_id?: string;
-          completed?: boolean;
-          completed_at?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
-    };
-    Views: {
-      [_ in never]: never;
-    };
-    Functions: {
-      [_ in never]: never;
-    };
-    Enums: {
-      [_ in never]: never;
-    };
-  };
-}
+
 
 // Helper functions for image upload
 export const uploadImage = async (file: File | { uri: string; name: string; type: string }, bucket: string, path: string) => {
@@ -572,6 +548,70 @@ export const deleteImage = async (bucket: string, path: string) => {
   } catch (error) {
     console.error('Failed to delete image:', error);
     throw error;
+  }
+};
+
+// Get existing scan images from Supabase for a user
+export const getScanImagesFromSupabase = async (userId: string): Promise<{
+  front?: { uri: string; shouldMirror: boolean; timestamp: number };
+  right?: { uri: string; shouldMirror: boolean; timestamp: number };
+  left?: { uri: string; shouldMirror: boolean; timestamp: number };
+}> => {
+  try {
+    console.log(`🔍 [Sync] Getting scan images from Supabase for user: ${userId}`);
+
+    const { data: files, error } = await supabase.storage
+      .from(STORAGE_BUCKETS.SCAN_IMAGES)
+      .list(userId);
+
+    if (error) {
+      console.log(`⚠️ [Sync] Could not list files: ${error.message}`);
+      return {};
+    }
+
+    if (!files || files.length === 0) {
+      console.log(`📭 [Sync] No images found for user: ${userId}`);
+      return {};
+    }
+
+    const result: any = {};
+
+    for (const file of files) {
+      const fileName = file.name;
+      let scanType: 'front' | 'right' | 'left' | null = null;
+
+      if (fileName.startsWith('front_')) {
+        scanType = 'front';
+      } else if (fileName.startsWith('right_')) {
+        scanType = 'right';
+      } else if (fileName.startsWith('left_')) {
+        scanType = 'left';
+      }
+
+      if (scanType) {
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from(STORAGE_BUCKETS.SCAN_IMAGES)
+          .getPublicUrl(`${userId}/${fileName}`);
+
+        // Extract timestamp from filename (format: type_timestamp.jpg)
+        const timestampMatch = fileName.match(/_(\d+)\.jpg$/);
+        const timestamp = timestampMatch ? parseInt(timestampMatch[1]) : Date.now();
+
+        result[scanType] = {
+          uri: publicUrl,
+          shouldMirror: scanType === 'front', // Front images are typically mirrored
+          timestamp: timestamp
+        };
+
+        console.log(`✅ [Sync] Found ${scanType} image: ${fileName}`);
+      }
+    }
+
+    return result;
+  } catch (error) {
+    console.error('Failed to get scan images from Supabase:', error);
+    return {};
   }
 };
 

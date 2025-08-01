@@ -60,10 +60,7 @@ export const Button: React.FC<ButtonProps> = ({
       activeOpacity={0.8}
     >
       {loading ? (
-        <ActivityIndicator 
-          color={variant === 'primary' ? colors.text.light : colors.primary} 
-          size="small" 
-        />
+        <Text style={{ fontSize: 20 }}>📊</Text>
       ) : (
         <>
           {icon && icon}

@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import { StyleSheet, View, TouchableOpacity, SafeAreaView, Platform, ScrollView } from "react-native";
+import { StyleSheet, View, TouchableOpacity, SafeAreaView, Platform, ScrollView, Text } from "react-native";
 import { H2, H3, Body, BodySmall } from "@/components/ui/Typography";
 import { colors, spacing, borderRadius, shadows } from "@/constants/theme";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { router } from "expo-router";
 import { useAuth } from "@/hooks/useAuth";
-import { Check } from "lucide-react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function PaywallScreen() {
@@ -67,15 +66,15 @@ export default function PaywallScreen() {
                 </View>
                 <View style={styles.planFeatures}>
                   <View style={styles.featureItem}>
-                    <Check size={16} color={colors.primary} />
+                    <Text style={{ fontSize: 20 }}>✅</Text>
                     <Body style={styles.featureText}>Personalized routine</Body>
                   </View>
                   <View style={styles.featureItem}>
-                    <Check size={16} color={colors.primary} />
+                    <Text style={{ fontSize: 20 }}>✅</Text>
                     <Body style={styles.featureText}>Progress tracking</Body>
                   </View>
                   <View style={styles.featureItem}>
-                    <Check size={16} color={colors.primary} />
+                    <Text style={{ fontSize: 20 }}>✅</Text>
                     <Body style={styles.featureText}>AI skin analysis</Body>
                   </View>
                 </View>
@@ -104,15 +103,15 @@ export default function PaywallScreen() {
                 </View>
                 <View style={styles.planFeatures}>
                   <View style={styles.featureItem}>
-                    <Check size={16} color={colors.primary} />
+                    <Text style={{ fontSize: 20 }}>✅</Text>
                     <Body style={styles.featureText}>Everything in Monthly</Body>
                   </View>
                   <View style={styles.featureItem}>
-                    <Check size={16} color={colors.primary} />
+                    <Text style={{ fontSize: 20 }}>✅</Text>
                     <Body style={styles.featureText}>Priority support</Body>
                   </View>
                   <View style={styles.featureItem}>
-                    <Check size={16} color={colors.primary} />
+                    <Text style={{ fontSize: 20 }}>✅</Text>
                     <Body style={styles.featureText}>Advanced analytics</Body>
                   </View>
                 </View>
@@ -205,11 +204,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.m,
     paddingVertical: spacing.xs,
     borderRadius: borderRadius.round,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
+    ...(Platform.OS === 'web' ? {
+      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+    } : {
+      shadowColor: colors.primary,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+      elevation: 4,
+    }),
   },
   savingText: {
     color: colors.text.light,

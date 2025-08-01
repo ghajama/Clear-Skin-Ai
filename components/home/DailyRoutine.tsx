@@ -1,10 +1,8 @@
 import { colors, spacing, borderRadius } from '@/constants/theme';
 import React from 'react';
-import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
 import { H3, Body, BodySmall } from '@/components/ui/Typography';
 import { useSkincare } from '@/hooks/useSkincare';
-import { Check, Info } from 'lucide-react-native';
-
 export const DailyRoutine: React.FC = () => {
   const { routineSteps, toggleRoutineStep } = useSkincare();
   const [timeOfDay, setTimeOfDay] = React.useState<'morning' | 'evening'>(
@@ -59,7 +57,7 @@ export const DailyRoutine: React.FC = () => {
                 step.completed && styles.checkboxChecked,
               ]}
             >
-              {step.completed && <Check size={16} color={colors.text.light} />}
+              {step.completed && <Text style={{ fontSize: 20 }}>✅</Text>}
             </View>
           </TouchableOpacity>
           <View style={styles.stepContent}>
@@ -68,7 +66,7 @@ export const DailyRoutine: React.FC = () => {
             </Body>
           </View>
           <TouchableOpacity style={styles.infoButton}>
-            <Info size={20} color={colors.text.secondary} />
+            <Text style={{ fontSize: 20, color: colors.text.secondary }}>ℹ️</Text>
           </TouchableOpacity>
         </View>
       ))}

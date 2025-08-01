@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "supabase": {
+      "command": "node",
+      "args": [
+        "/workspaces/Clear-Skin-Ai/supabase-mcp/packages/mcp-server-supabase/dist/transports/stdio.js",
+        "--project-ref=sogmridxuwqulqxtpoqp"
+      ],
+      "env": {
+        "SUPABASE_ACCESS_TOKEN": "sbp_c9e01daff43ee8e8fbbea3bf8cdcf52584e636f7"
+      }
+    }
+  }
+}

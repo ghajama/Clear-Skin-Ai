@@ -1,14 +1,12 @@
 import React, { useState } from "react";
-import { StyleSheet, View, Dimensions, SafeAreaView, ScrollView } from "react-native";
+import { StyleSheet, View, Dimensions, SafeAreaView, ScrollView, Text } from "react-native";
 import { H2, H3, Body, BodySmall } from "@/components/ui/Typography";
 import { colors, spacing, borderRadius, shadows } from "@/constants/theme";
 import { Button } from "@/components/ui/Button";
-import { Image } from "expo-image";
+import { SafeImage as Image } from "@/components/ui/SafeImage";
 import { router, Stack } from "expo-router";
 import { testimonials } from "@/constants/mockData";
 import { LinearGradient } from "expo-linear-gradient";
-import { Star, ArrowRight } from "lucide-react-native";
-
 const { width } = Dimensions.get("window");
 
 export default function TestimonialsScreen() {
@@ -91,7 +89,7 @@ export default function TestimonialsScreen() {
                   </View>
                   <View style={styles.starsContainer}>
                     {[...Array(review.rating)].map((_, i) => (
-                      <Star key={i} size={16} color={colors.warning} fill={colors.warning} />
+                      <Text style={{ fontSize: 20 }}>⭐</Text>
                     ))}
                   </View>
                 </View>
@@ -123,7 +121,7 @@ export default function TestimonialsScreen() {
                   
                   <View style={styles.vsContainer}>
                     <Body style={styles.vsText}>VS</Body>
-                    <ArrowRight size={20} color={colors.primary} />
+                    <Text style={{ fontSize: 20 }}>➡️</Text>
                   </View>
                   
                   <View style={styles.imageBlock}>

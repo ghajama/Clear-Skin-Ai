@@ -16,7 +16,33 @@ const webStorage = {
   },
   async setItem(key: string, value: string): Promise<void> {
     if (typeof window !== 'undefined' && window.localStorage) {
-      window.localStorage.setItem(key, value);
+      try {
+        window.localStorage.setItem(key, value);
+      } catch (error: any) {
+        if (error.name === 'QuotaExceededError') {
+          console.warn('🧹 [Storage] localStorage quota exceeded, clearing old data...');
+          // Clear old scan data but keep essential data
+          const keysToKeep = ['auth_session', 'user_profile'];
+          const allKeys = Object.keys(window.localStorage);
+
+          for (const existingKey of allKeys) {
+            if (!keysToKeep.some(keepKey => existingKey.includes(keepKey))) {
+              window.localStorage.removeItem(existingKey);
+            }
+          }
+
+          // Try again after cleanup
+          try {
+            window.localStorage.setItem(key, value);
+            console.log('✅ [Storage] Successfully saved after cleanup');
+          } catch (retryError) {
+            console.error('❌ [Storage] Still failed after cleanup:', retryError);
+            throw retryError;
+          }
+        } else {
+          throw error;
+        }
+      }
     }
   },
   async removeItem(key: string): Promise<void> {
@@ -93,8 +119,10 @@ export const STORAGE_KEYS = {
   USER: 'user',
   QUIZ_ANSWERS: 'quiz_answers',
   ROUTINE_PROGRESS: 'routine_progress',
+  ROUTINE_STEPS: 'routine_steps', // Added missing key
   CHAT_HISTORY: 'chat_history',
   SETTINGS: 'settings',
+  SKIN_SCORE: 'skin_score', // Added missing key
   SCAN_FRONT: 'scan_front',
   SCAN_RIGHT: 'scan_right',
   SCAN_LEFT: 'scan_left',
@@ -118,10 +146,43 @@ export interface ScanSession {
 }
 
 export const imageCache = {
-  // Get current scan session
+  // Get current scan session - reconstruct full session from minimal data
   async getCurrentSession(): Promise<ScanSession | null> {
     try {
-      return await storage.getItem<ScanSession>(STORAGE_KEYS.SCAN_SESSION);
+      const minimalSession = await storage.getItem<ScanSession>(STORAGE_KEYS.SCAN_SESSION);
+      if (!minimalSession) return null;
+
+      // Reconstruct full session by loading individual images
+      const session: ScanSession = {
+        id: minimalSession.id,
+        timestamp: minimalSession.timestamp,
+        completed: minimalSession.completed,
+      };
+
+      // Load individual images if they exist
+      if (minimalSession.front) {
+        try {
+          session.front = await storage.getItem<ScanImage>(STORAGE_KEYS.SCAN_FRONT);
+        } catch (e) {
+          console.warn('Failed to load front image');
+        }
+      }
+      if (minimalSession.right) {
+        try {
+          session.right = await storage.getItem<ScanImage>(STORAGE_KEYS.SCAN_RIGHT);
+        } catch (e) {
+          console.warn('Failed to load right image');
+        }
+      }
+      if (minimalSession.left) {
+        try {
+          session.left = await storage.getItem<ScanImage>(STORAGE_KEYS.SCAN_LEFT);
+        } catch (e) {
+          console.warn('Failed to load left image');
+        }
+      }
+
+      return session;
     } catch (error) {
       console.error('Failed to get current session:', error);
       return null;
@@ -145,7 +206,7 @@ export const imageCache = {
     }
   },
 
-  // Update session with image
+  // Update session with image - optimized to avoid quota exceeded
   async updateSession(type: 'front' | 'right' | 'left', imageUri: string, shouldMirror: boolean = false): Promise<void> {
     try {
       let session = await this.getCurrentSession();
@@ -166,15 +227,26 @@ export const imageCache = {
 
       session[type] = scanImage;
       session.timestamp = Date.now();
-      
+
       // Check if all images are captured
       if (session.front && session.right && session.left) {
         session.completed = true;
       }
 
-      await storage.setItem(STORAGE_KEYS.SCAN_SESSION, session);
+      // Only store minimal session data to avoid quota exceeded
+      const minimalSession = {
+        id: session.id,
+        timestamp: session.timestamp,
+        completed: session.completed,
+        // Store only references, not full image data
+        front: session.front ? { uri: 'stored', shouldMirror: session.front.shouldMirror, timestamp: session.front.timestamp } : undefined,
+        right: session.right ? { uri: 'stored', shouldMirror: session.right.shouldMirror, timestamp: session.right.timestamp } : undefined,
+        left: session.left ? { uri: 'stored', shouldMirror: session.left.shouldMirror, timestamp: session.left.timestamp } : undefined,
+      };
+
+      await storage.setItem(STORAGE_KEYS.SCAN_SESSION, minimalSession);
       await storage.setItem(STORAGE_KEYS[`SCAN_${type.toUpperCase()}` as keyof typeof STORAGE_KEYS], scanImage);
-      
+
       console.log(`💾 [Storage] Updated ${type} image in session and individual storage`);
     } catch (error) {
       console.error(`Failed to update session with ${type}:`, error);
@@ -291,14 +363,14 @@ export const imageCache = {
           left: session.left,
         };
       }
-      
+
       // Fallback to individual storage
       const [front, right, left] = await Promise.all([
         this.getImage('front'),
         this.getImage('right'),
         this.getImage('left'),
       ]);
-      
+
       return {
         front: front || undefined,
         right: right || undefined,
@@ -307,6 +379,62 @@ export const imageCache = {
     } catch (error) {
       console.error('Failed to get all scan results:', error);
       return {};
+    }
+  },
+
+  // Sync images from Supabase to local cache
+  async syncFromSupabase(userId: string): Promise<void> {
+    try {
+      console.log(`🔄 [Sync] Syncing images from Supabase for user: ${userId}`);
+
+      // Import getScanImagesFromSupabase dynamically to avoid circular dependency
+      const { getScanImagesFromSupabase } = await import('./supabase');
+      const supabaseImages = await getScanImagesFromSupabase(userId);
+
+      // Get current local session
+      let session = await this.getCurrentSession();
+      if (!session) {
+        session = await this.createSession();
+      }
+
+      let hasUpdates = false;
+
+      // Check each image type
+      for (const type of ['front', 'right', 'left'] as const) {
+        const supabaseImage = supabaseImages[type];
+        const localImage = session[type];
+
+        if (supabaseImage) {
+          // If we don't have local image or Supabase image is newer
+          if (!localImage || supabaseImage.timestamp > localImage.timestamp) {
+            console.log(`📥 [Sync] Updating local ${type} image from Supabase`);
+
+            const scanImage: ScanImage = {
+              uri: supabaseImage.uri,
+              shouldMirror: supabaseImage.shouldMirror,
+              timestamp: supabaseImage.timestamp,
+            };
+
+            session[type] = scanImage;
+
+            // Also save to individual storage for fallback
+            await storage.setItem(STORAGE_KEYS[`SCAN_${type.toUpperCase()}` as keyof typeof STORAGE_KEYS], scanImage);
+
+            hasUpdates = true;
+          }
+        }
+      }
+
+      if (hasUpdates) {
+        // Update session timestamp and save
+        session.timestamp = Date.now();
+        await storage.setItem(STORAGE_KEYS.SCAN_SESSION, session);
+        console.log(`✅ [Sync] Local cache updated from Supabase`);
+      } else {
+        console.log(`✅ [Sync] Local cache is up to date`);
+      }
+    } catch (error) {
+      console.error('Failed to sync from Supabase:', error);
     }
   },
 

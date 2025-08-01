@@ -1,5 +1,5 @@
 import createContextHook from '@nkzw/create-context-hook';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Message, QuickPrompt } from '@/types';
 import { quickPrompts } from '@/constants/mockData';
 import { storage, STORAGE_KEYS } from '@/lib/storage';
@@ -11,6 +11,8 @@ import { useSkincare } from './useSkincare';
 export const [ChatProvider, useChat] = createContextHook(() => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+  const { skinScore, quizAnswers } = useSkincare();
 
   // Load messages from storage on mount
   useEffect(() => {
@@ -52,11 +54,11 @@ export const [ChatProvider, useChat] = createContextHook(() => {
     }
   }, [messages]);
 
-  const sendMessage = async (text: string) => {
+  const sendMessage = useCallback(async (text: string) => {
     if (!text.trim()) return;
 
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: generateId(),
       text,
       sender: 'user',
       timestamp: Date.now(),
@@ -66,12 +68,16 @@ export const [ChatProvider, useChat] = createContextHook(() => {
     setLoading(true);
 
     try {
-      // Mock AI response - in a real app, this would call an AI API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      // Use real chat service instead of mock
+      const response = await chatService.sendMessage(text, {
+        skinScore,
+        quizAnswers,
+        user: user || undefined,
+      });
+
       const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        text: generateMockResponse(text),
+        id: generateId(),
+        text: response,
         sender: 'assistant',
         timestamp: Date.now(),
       };
@@ -79,31 +85,41 @@ export const [ChatProvider, useChat] = createContextHook(() => {
       setMessages(prev => [...prev, aiResponse]);
     } catch (error) {
       console.error('Failed to get AI response:', error);
+
+      // Fallback to mock response if API fails
+      const fallbackResponse: Message = {
+        id: generateId(),
+        text: generateMockResponse(text),
+        sender: 'assistant',
+        timestamp: Date.now(),
+      };
+
+      setMessages(prev => [...prev, fallbackResponse]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [skinScore, quizAnswers, user]);
 
-  const clearChat = async () => {
+  const clearChat = useCallback(async () => {
     try {
       await storage.removeItem(STORAGE_KEYS.CHAT_HISTORY);
-      
-      // Add welcome message
+
+      // Add welcome message with proper ID
       const welcomeMessage: Message = {
-        id: '1',
+        id: generateId(),
         text: "Hello! I'm your AI skincare assistant. How can I help you today?",
         sender: 'assistant',
         timestamp: Date.now(),
       };
-      
+
       setMessages([welcomeMessage]);
     } catch (error) {
       console.error('Failed to clear chat:', error);
     }
-  };
+  }, []);
 
-  // Simple mock response generator
-  const generateMockResponse = (query: string): string => {
+  // Simple mock response generator as fallback
+  const generateMockResponse = useCallback((query: string): string => {
     const responses = [
       "Based on your skin type, I recommend using a gentle cleanser twice daily.",
       "Hydration is key! Make sure to drink plenty of water and use a moisturizer suitable for your skin type.",
@@ -115,12 +131,17 @@ export const [ChatProvider, useChat] = createContextHook(() => {
     ];
 
     return responses[Math.floor(Math.random() * responses.length)];
-  };
+  }, []);
+
+  const sendQuickPrompt = useCallback(async (prompt: QuickPrompt) => {
+    await sendMessage(prompt.text);
+  }, [sendMessage]);
 
   return {
     messages,
     loading,
     sendMessage,
+    sendQuickPrompt,
     clearChat,
     availablePrompts: quickPrompts,
   };

@@ -1,12 +1,10 @@
 import React from "react";
-import { StyleSheet, View, ScrollView, TouchableOpacity, SafeAreaView } from "react-native";
+import { StyleSheet, View, ScrollView, TouchableOpacity, SafeAreaView, Text } from "react-native";
 import { H2, H3, Body, BodySmall, Caption } from "@/components/ui/Typography";
 import { colors, spacing, borderRadius } from "@/constants/theme";
 import { useSkincare } from "@/hooks/useSkincare";
 import { Card } from "@/components/ui/Card";
-import { Image } from "expo-image";
-import { BarChart2, Camera, Share2, Download } from "lucide-react-native";
-
+import { SafeImage as Image } from "@/components/ui/SafeImage";
 export default function ProgressScreen() {
   const { skinScore, scanResults } = useSkincare();
 
@@ -19,13 +17,13 @@ export default function ProgressScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.emptyContainer}>
-            <BarChart2 size={60} color={colors.text.secondary} />
+            <Text style={{ fontSize: 20 }}>📊</Text>
             <H3 style={styles.emptyTitle}>No Progress Data Yet</H3>
             <Body style={styles.emptyText}>
               Complete your skin scan to start tracking your progress
             </Body>
             <TouchableOpacity style={styles.scanButton}>
-              <Camera size={20} color={colors.text.light} />
+              <Text style={{ fontSize: 20 }}>📷</Text>
               <BodySmall style={styles.scanButtonText}>Start Scan</BodySmall>
             </TouchableOpacity>
           </View>
@@ -62,16 +60,16 @@ export default function ProgressScreen() {
               <Body>{skinScore.hydration}</Body>
             </View>
             <View style={styles.metricItem}>
-              <BodySmall style={styles.metricLabel}>Texture</BodySmall>
-              <Body>{skinScore.texture}</Body>
+              <BodySmall style={styles.metricLabel}>Acne</BodySmall>
+              <Body>{skinScore.acne}</Body>
             </View>
             <View style={styles.metricItem}>
-              <BodySmall style={styles.metricLabel}>Pigmentation</BodySmall>
-              <Body>{skinScore.pigmentation}</Body>
+              <BodySmall style={styles.metricLabel}>Sun Damage</BodySmall>
+              <Body>{skinScore.sunDamage}</Body>
             </View>
             <View style={styles.metricItem}>
-              <BodySmall style={styles.metricLabel}>Sensitivity</BodySmall>
-              <Body>{skinScore.sensitivity}</Body>
+              <BodySmall style={styles.metricLabel}>Dryness</BodySmall>
+              <Body>{skinScore.dryness}</Body>
             </View>
           </View>
         </Card>
@@ -87,11 +85,11 @@ export default function ProgressScreen() {
               />
               <View style={styles.scanActions}>
                 <TouchableOpacity style={styles.actionButton}>
-                  <Share2 size={20} color={colors.primary} />
+                  <Text style={{ fontSize: 20 }}>📤</Text>
                   <BodySmall style={styles.actionText}>Share</BodySmall>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.actionButton}>
-                  <Download size={20} color={colors.primary} />
+                  <Text style={{ fontSize: 20 }}>⬇️</Text>
                   <BodySmall style={styles.actionText}>Save</BodySmall>
                 </TouchableOpacity>
               </View>

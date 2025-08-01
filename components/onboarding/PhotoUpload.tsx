@@ -1,25 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  StyleSheet, 
+import { StyleSheet, 
   View, 
   Dimensions, 
   Platform, 
   Alert,
-  ActionSheetIOS
-} from 'react-native';
+  ActionSheetIOS, Text } from "react-native";
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { H3, Body } from '@/components/ui/Typography';
 import { colors, spacing, borderRadius, shadows } from '@/constants/theme';
 import { Button } from '@/components/ui/Button';
-import { 
-  Camera, 
-  RotateCcw, 
-  Check, 
-  Upload, 
-  FlipHorizontal
-} from 'lucide-react-native';
-import { Image } from 'expo-image';
+import { SafeImage as Image } from '@/components/ui/SafeImage';
 import { useSkincare } from '@/hooks/useSkincare';
 
 const { width } = Dimensions.get('window');
@@ -47,13 +38,14 @@ export default function PhotoUpload({
 }: PhotoUploadProps) {
   const { isUploading } = useSkincare();
   const [permission, requestPermission] = useCameraPermissions();
-  const [facing, setFacing] = useState<CameraType>('front');
+  const [facing, setFacing] = useState<'front' | 'back'>('front');
   const [capturedImage, setCapturedImage] = useState<string | null>(savedPhoto || null);
   const [cameraActive, setCameraActive] = useState(false);
   const [isFromCamera, setIsFromCamera] = useState(false);
   const [shouldMirror, setShouldMirror] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const cameraRef = useRef<CameraView>(null);
+  const cameraRef = useRef<any>(null);
+  const webFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (savedPhoto) {
@@ -63,7 +55,10 @@ export default function PhotoUpload({
   }, [savedPhoto, savedShouldMirror]);
 
   const showImagePicker = () => {
-    if (Platform.OS === 'ios') {
+    if (Platform.OS === 'web') {
+      // On web, directly open file picker since camera is not available
+      openGallery();
+    } else if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
         {
           options: ['Cancel', 'Take Photo', 'Choose from Gallery'],
@@ -102,7 +97,29 @@ export default function PhotoUpload({
     setIsFromCamera(true);
   };
 
+  // Web file selection handler
+  const handleWebFileSelect = (event: any) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const uri = e.target?.result as string;
+        setCapturedImage(uri);
+        setIsFromCamera(false);
+        setShouldMirror(false);
+        console.log('📸 [PhotoUpload] Photo selected from web file input, shouldMirror: false');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const openGallery = async () => {
+    if (Platform.OS === 'web') {
+      // On web, trigger the file input
+      webFileInputRef.current?.click();
+      return;
+    }
+
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert('Permission Required', 'Gallery access is needed to select photos.');
@@ -181,15 +198,22 @@ export default function PhotoUpload({
 
   return (
     <View style={styles.container}>
+      {/* Hidden file input for web */}
+      {Platform.OS === 'web' && (
+        <input
+          ref={webFileInputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={handleWebFileSelect}
+        />
+      )}
+
       {/* Top Section - Photo Display */}
       <View style={styles.photoContainer}>
         {cameraActive && Platform.OS !== 'web' ? (
           <View style={styles.cameraWrapper}>
-            <CameraView
-              ref={cameraRef}
-              style={styles.camera}
-              facing={facing}
-            />
+            <Text style={{ fontSize: 20 }}>📷</Text>
             <View style={styles.cameraOverlay}>
               <View style={styles.faceGuide}>
                 <View style={styles.faceOutline} />
@@ -213,7 +237,7 @@ export default function PhotoUpload({
               contentFit="cover"
             />
             <View style={styles.placeholderOverlay}>
-              <Upload size={32} color={colors.text.light} />
+              <Text style={{ fontSize: 32, color: colors.text.light }}>📤</Text>
             </View>
           </View>
         )}
@@ -262,22 +286,22 @@ export default function PhotoUpload({
                   title="Take Photo"
                   onPress={takePicture}
                   style={styles.takePhotoButton}
-                  icon={<Camera size={20} color={colors.text.light} />}
+                  icon={<Text style={{ fontSize: 20 }}>📷</Text>}
                 />
                 <Button
                   title="Flip Camera"
                   onPress={toggleCameraFacing}
                   variant="outline"
                   style={styles.flipButton}
-                  icon={<FlipHorizontal size={20} color={colors.primary} />}
+                  icon={<Text style={{ fontSize: 20 }}>🔄</Text>}
                 />
               </View>
             ) : !capturedImage ? (
               <Button
-                title="Upload or Take Photo"
+                title={Platform.OS === 'web' ? "Select Photo" : "Upload or Take Photo"}
                 onPress={showImagePicker}
                 style={styles.uploadButton}
-                icon={<Camera size={20} color={colors.text.light} />}
+                icon={<Text style={{ fontSize: 20 }}>{Platform.OS === 'web' ? '📁' : '📷'}</Text>}
               />
             ) : (
               <View style={styles.photoActions}>
@@ -286,14 +310,14 @@ export default function PhotoUpload({
                   onPress={retakePhoto}
                   variant="outline"
                   style={styles.actionButton}
-                  icon={<RotateCcw size={20} color={colors.primary} />}
+                  icon={<Text style={{ fontSize: 20 }}>🔄</Text>}
                 />
                 <Button
                   title={isProcessing ? "Processing..." : "Continue"}
                   onPress={usePhoto}
                   style={styles.actionButton}
                   disabled={isProcessing}
-                  icon={<Check size={20} color={colors.text.light} />}
+                  icon={<Text style={{ fontSize: 20 }}>✅</Text>}
                 />
               </View>
             )}

@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, SafeAreaView, Dimensions } from "react-native";
+import { StyleSheet, View, SafeAreaView, Dimensions, Text } from "react-native";
 import { H2, Body } from "@/components/ui/Typography";
 import { colors, spacing, borderRadius, shadows } from "@/constants/theme";
 import { router, Stack } from "expo-router";
-import { Image } from "expo-image";
+import { SafeImage as Image } from "@/components/ui/SafeImage";
 import { LinearGradient } from "expo-linear-gradient";
-import { CheckCircle, Zap, Brain, Sparkles } from "lucide-react-native";
 import { imageCache, ScanImage } from "@/lib/storage";
 import Animated, { 
   useSharedValue, 
@@ -61,45 +60,67 @@ export default function AnalysisScreen() {
     right?: ScanImage;
     left?: ScanImage;
   }>({});
-  
+
   const progress = useSharedValue(0);
   const pulseAnimation = useSharedValue(1);
-  
+
   const steps = [
-    { title: "Processing Images", icon: Zap, duration: 2000 },
-    { title: "Analyzing Skin Texture", icon: Brain, duration: 2500 },
-    { title: "Generating Report", icon: CheckCircle, duration: 1500 }
+    { title: "Processing Images", icon: () => <Text style={{ fontSize: 16 }}>⚡</Text>, duration: 2000 },
+    { title: "Analyzing Skin Texture", icon: () => <Text style={{ fontSize: 16 }}>🧠</Text>, duration: 2500 },
+    { title: "Generating Report", icon: () => <Text style={{ fontSize: 16 }}>✅</Text>, duration: 1500 }
   ];
 
+  // Always show 3 image slots, regardless of availability
   const images = [
-    { uri: scanResults.front?.uri || '', label: "Front" },
-    { uri: scanResults.right?.uri || '', label: "Right" },
-    { uri: scanResults.left?.uri || '', label: "Left" }
-  ].filter(img => img.uri);
+    { uri: scanResults.front?.uri || '', label: "Front", type: 'front' as const },
+    { uri: scanResults.right?.uri || '', label: "Right", type: 'right' as const },
+    { uri: scanResults.left?.uri || '', label: "Left", type: 'left' as const }
+  ];
+
+  const loadScanResults = async () => {
+    try {
+      const [front, right, left] = await Promise.all([
+        imageCache.getImage('front'),
+        imageCache.getImage('right'),
+        imageCache.getImage('left'),
+      ]);
+
+      console.log('🔬 [Analysis] Scan results:', { front, right, left });
+
+      setScanResults({
+        front: front || undefined,
+        right: right || undefined,
+        left: left || undefined,
+      });
+    } catch (error) {
+      console.error('Failed to load scan results:', error);
+    }
+  };
 
   useEffect(() => {
-    const loadScanResults = async () => {
-      try {
-        const [front, right, left] = await Promise.all([
-          imageCache.getImage('front'),
-          imageCache.getImage('right'),
-          imageCache.getImage('left'),
-        ]);
-        
-        console.log('🔬 [Analysis] Scan results:', { front, right, left });
-        
-        setScanResults({
-          front: front,
-          right: right,
-          left: left,
-        });
-      } catch (error) {
-        console.error('Failed to load scan results:', error);
-      }
-    };
-
     loadScanResults();
   }, []);
+
+  // Separate effect for polling that depends on scanResults
+  useEffect(() => {
+    const missingImages = images.filter(img => !img.uri);
+
+    if (missingImages.length > 0) {
+      console.log('🔄 [Analysis] Setting up polling for missing images:', missingImages.map(img => img.type));
+
+      const pollInterval = setInterval(() => {
+        loadScanResults();
+      }, 2000);
+
+      // Cleanup interval
+      return () => {
+        console.log('🛑 [Analysis] Stopping polling');
+        clearInterval(pollInterval);
+      };
+    } else {
+      console.log('✅ [Analysis] All images loaded, no polling needed');
+    }
+  }, [scanResults.front, scanResults.right, scanResults.left]);
 
   useEffect(() => {
     const performAnalysis = async () => {
@@ -121,9 +142,9 @@ export default function AnalysisScreen() {
       }
       
       setAnalysisComplete(true);
-      
+
       setTimeout(() => {
-        router.push("/onboarding/skin-score");
+        router.push("/onboarding/quiz/1");
       }, 1000);
     };
 
@@ -163,58 +184,48 @@ export default function AnalysisScreen() {
           
           {/* Images Grid */}
           <View style={styles.imagesContainer}>
-            {images.length > 0 ? images.map((image, index) => (
+            {images.map((image, index) => (
               <View key={index} style={styles.imageWrapper}>
                 <View style={styles.imageContainer}>
-                  <Image
-                    source={{ uri: image.uri }}
-                    style={styles.scanImage}
-                    contentFit="cover"
-                  />
-                  <LinearGradient
-                    colors={['transparent', 'rgba(0,0,0,0.7)']}
-                    style={styles.imageGradient}
-                  />
+                  {image.uri ? (
+                    <>
+                      <Image
+                        source={{ uri: image.uri }}
+                        style={styles.scanImage}
+                        contentFit="cover"
+                      />
+                      <LinearGradient
+                        colors={['transparent', 'rgba(0,0,0,0.7)']}
+                        style={styles.imageGradient}
+                      />
+                    </>
+                  ) : (
+                    <View style={styles.placeholderContent}>
+                      <Text style={{ fontSize: 24, marginBottom: 8 }}>📸</Text>
+                      <Body style={styles.placeholderText}>Loading...</Body>
+                    </View>
+                  )}
                   <View style={styles.imageOverlay}>
                     <Body style={styles.imageLabel}>{image.label}</Body>
                   </View>
                   <View style={styles.analysisIndicator}>
-                    {currentStep >= index ? (
-                      <CheckCircle size={20} color={colors.success} />
-                    ) : (
+                    {image.uri && currentStep >= index ? (
+                      <Text style={{ fontSize: 20 }}>✅</Text>
+                    ) : image.uri ? (
                       <View style={styles.analysisRing} />
+                    ) : (
+                      <Text style={{ fontSize: 16 }}>⏳</Text>
                     )}
                   </View>
                 </View>
               </View>
-            )) : (
-              // Fallback placeholders if no images
-              ['Front', 'Right', 'Left'].map((label, index) => (
-                <View key={index} style={styles.imageWrapper}>
-                  <View style={[styles.imageContainer, styles.placeholderContainer]}>
-                    <View style={styles.placeholderContent}>
-                      <Body style={styles.placeholderText}>Processing...</Body>
-                    </View>
-                    <View style={styles.imageOverlay}>
-                      <Body style={styles.imageLabel}>{label}</Body>
-                    </View>
-                    <View style={styles.analysisIndicator}>
-                      {currentStep >= index ? (
-                        <CheckCircle size={20} color={colors.success} />
-                      ) : (
-                        <View style={styles.analysisRing} />
-                      )}
-                    </View>
-                  </View>
-                </View>
-              ))
-            )}
+            ))}
           </View>
           
           {/* Progress Section */}
           <View style={styles.progressSection}>
             <View style={styles.currentStep}>
-              <Sparkles size={24} color={colors.primary} />
+              <Text style={{ fontSize: 20 }}>✨</Text>
               <Body style={styles.currentStepText}>
                 {analysisComplete ? "Analysis Complete!" : steps[currentStep]?.title}
               </Body>
@@ -437,15 +448,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   placeholderContent: {
-    position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
     height: '100%',
+    backgroundColor: colors.card,
   },
   placeholderText: {
     color: colors.text.secondary,
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '500' as const,
+    textAlign: 'center',
   },
 });

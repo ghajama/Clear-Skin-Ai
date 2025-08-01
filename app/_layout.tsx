@@ -1,5 +1,13 @@
-import { BundleInspector } from '../.rorkai/inspector';
-import { RorkErrorBoundary } from '../.rorkai/rork-error-boundary';
+// Suppress warnings IMMEDIATELY before any other imports
+if (typeof window !== 'undefined') {
+  const originalWarn = console.warn;
+  console.warn = (...args) => {
+    const message = args[0];
+    if (typeof message === 'string' && message.includes('shadow')) return;
+    originalWarn.apply(console, args);
+  };
+}
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -9,6 +17,9 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { SkincareProvider } from "@/hooks/useSkincare";
 import { ChatProvider } from "@/hooks/useChat";
 import { initializeSupabase } from "@/lib/supabase";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ErrorProvider } from "@/providers/ErrorProvider";
+import "@/lib/suppressWarnings"; // Suppress React Native Web warnings
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -17,7 +28,7 @@ const queryClient = new QueryClient();
 
 function RootLayoutNav() {
   return (
-    <Stack screenOptions={{ 
+    <Stack screenOptions={{
       headerBackTitle: "Back",
       headerStyle: { backgroundColor: '#FFFFFF' },
       headerShadowVisible: false,
@@ -38,16 +49,20 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <SkincareProvider>
-          <ChatProvider>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <BundleInspector><RorkErrorBoundary><RootLayoutNav /></RorkErrorBoundary></BundleInspector>
-            </GestureHandlerRootView>
-          </ChatProvider>
-        </SkincareProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <ErrorProvider>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <SkincareProvider>
+              <ChatProvider>
+                <GestureHandlerRootView style={{ flex: 1 }}>
+                  <RootLayoutNav />
+                </GestureHandlerRootView>
+              </ChatProvider>
+            </SkincareProvider>
+          </AuthProvider>
+        </QueryClientProvider>
+      </ErrorProvider>
+    </ErrorBoundary>
   );
 }

@@ -1,8 +1,7 @@
 import { colors, spacing, borderRadius, shadows } from '@/constants/theme';
 import React from 'react';
-import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
 import { H3, BodySmall } from '@/components/ui/Typography';
-import { Camera, MessageCircle, Calendar, BarChart2 } from 'lucide-react-native';
 import { router } from 'expo-router';
 
 interface ActionItem {
@@ -17,25 +16,25 @@ export const QuickActions: React.FC = () => {
     {
       id: '1',
       title: 'Scan',
-      icon: <Camera size={24} color={colors.primary} />,
+      icon: <Text style={{ fontSize: 20 }}>📷</Text>,
       route: '/scan',
     },
     {
       id: '2',
       title: 'Routine',
-      icon: <Calendar size={24} color={colors.primary} />,
+      icon: <Text style={{ fontSize: 20 }}>📅</Text>,
       route: '/(tabs)/routine',
     },
     {
       id: '3',
       title: 'Progress',
-      icon: <BarChart2 size={24} color={colors.primary} />,
+      icon: <Text style={{ fontSize: 20 }}>📊</Text>,
       route: '/(tabs)/progress',
     },
     {
       id: '4',
       title: 'Chat',
-      icon: <MessageCircle size={24} color={colors.primary} />,
+      icon: <Text style={{ fontSize: 20 }}>💬</Text>,
       route: '/(tabs)/chat',
     },
   ];

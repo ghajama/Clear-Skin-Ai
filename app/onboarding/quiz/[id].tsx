@@ -38,7 +38,7 @@ export default function QuizScreen() {
       
       if (isLastQuestion) {
         completeQuiz();
-        router.push("/onboarding/analysis");
+        router.push("/onboarding/plan-teaser");
       } else {
         const nextQuestionId = (parseInt(questionId) + 1).toString();
         router.push(`/onboarding/quiz/${nextQuestionId}`);

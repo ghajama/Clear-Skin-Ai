@@ -1,22 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, SafeAreaView, ScrollView, Dimensions } from 'react-native';
+import { StyleSheet, View, SafeAreaView, ScrollView, Dimensions, Text } from "react-native";
 import { H1, H2, H3, Body, BodySmall } from '@/components/ui/Typography';
 import { colors, spacing, borderRadius, shadows } from '@/constants/theme';
 import { router, Stack } from 'expo-router';
-import { Image } from 'expo-image';
+import { SafeImage as Image } from '@/components/ui/SafeImage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Button } from '@/components/ui/Button';
-import { 
-  Star, 
-  Droplets, 
-  Sun, 
-  Zap, 
-  AlertCircle,
-  TrendingUp,
-  Target,
-  Sparkles,
-  ArrowRight
-} from 'lucide-react-native';
 import { imageCache, ScanImage } from '@/lib/storage';
 import { useAuth } from '@/hooks/useAuth';
 import Animated, { 
@@ -55,7 +44,7 @@ export default function SkinScoreScreen() {
       label: 'Acne',
       score: 5.2,
       maxScore: 10,
-      icon: AlertCircle,
+      icon: () => <Text style={{ fontSize: 20 }}>⚠️</Text>,
       color: colors.error,
       description: 'Moderate acne concerns detected'
     },
@@ -63,7 +52,7 @@ export default function SkinScoreScreen() {
       label: 'Hydration',
       score: 7.8,
       maxScore: 10,
-      icon: Droplets,
+      icon: () => <Text style={{ fontSize: 20 }}>💧</Text>,
       color: colors.primary,
       description: 'Good hydration levels'
     },
@@ -71,7 +60,7 @@ export default function SkinScoreScreen() {
       label: 'Sun Damage',
       score: 6.5,
       maxScore: 10,
-      icon: Sun,
+      icon: () => <Text style={{ fontSize: 20 }}>☀️</Text>,
       color: colors.warning,
       description: 'Some sun exposure signs'
     },
@@ -79,7 +68,7 @@ export default function SkinScoreScreen() {
       label: 'Texture',
       score: 8.1,
       maxScore: 10,
-      icon: Sparkles,
+      icon: () => <Text style={{ fontSize: 20 }}>✨</Text>,
       color: colors.success,
       description: 'Smooth skin texture'
     }
@@ -263,7 +252,7 @@ export default function SkinScoreScreen() {
               <Animated.View style={[styles.recommendationsSection, detailsStyle]}>
                 <View style={styles.recommendationCard}>
                   <View style={styles.recommendationHeader}>
-                    <TrendingUp size={24} color={colors.primary} />
+                    <Text style={{ fontSize: 20 }}>📈</Text>
                     <H2 style={styles.recommendationTitle}>Your Path to Perfect Skin</H2>
                   </View>
                   
@@ -282,7 +271,7 @@ export default function SkinScoreScreen() {
                   </View>
                   
                   <View style={styles.solutionBox}>
-                    <Target size={20} color={colors.success} />
+                    <Text style={{ fontSize: 20 }}>🎯</Text>
                     <Body style={styles.solutionText}>
                       Our custom plan will help you become a 10/10
                     </Body>
@@ -305,15 +294,7 @@ export default function SkinScoreScreen() {
                     router.replace('/(tabs)');
                   }}
                   style={styles.primaryButton}
-                  icon={<ArrowRight size={20} color={colors.text.light} />}
-                />
-                
-                <Button
-                  title="Take Mini Quiz First"
-                  onPress={() => router.push('/onboarding/quiz/1')}
-                  style={styles.secondaryButton}
-                  variant="outline"
-                  icon={<Sparkles size={20} color={colors.primary} />}
+                  icon={<Text style={{ fontSize: 20 }}>➡️</Text>}
                 />
               </Animated.View>
             )}

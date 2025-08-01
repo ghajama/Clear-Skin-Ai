@@ -1,9 +1,8 @@
 import { colors, spacing, borderRadius, shadows } from '@/constants/theme';
 import React from 'react';
-import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
 import { H3, H4, Body, BodySmall } from '@/components/ui/Typography';
 import { useSkincare } from '@/hooks/useSkincare';
-import { Camera } from 'lucide-react-native';
 import { router } from 'expo-router';
 
 export const SkinSnapshot: React.FC = () => {
@@ -27,7 +26,7 @@ export const SkinSnapshot: React.FC = () => {
             style={styles.scanButton}
             onPress={handleRescan}
           >
-            <Camera size={20} color={colors.text.light} />
+            <Text style={{ fontSize: 20 }}>📷</Text>
             <BodySmall style={styles.scanButtonText}>Scan Now</BodySmall>
           </TouchableOpacity>
         </View>
@@ -43,7 +42,7 @@ export const SkinSnapshot: React.FC = () => {
           style={styles.rescanButton}
           onPress={handleRescan}
         >
-          <Camera size={16} color={colors.primary} />
+          <Text style={{ fontSize: 20 }}>📷</Text>
           <BodySmall style={styles.rescanText}>Rescan</BodySmall>
         </TouchableOpacity>
       </View>
@@ -58,16 +57,16 @@ export const SkinSnapshot: React.FC = () => {
             <Body>{skinScore.hydration}</Body>
           </View>
           <View style={styles.metricItem}>
-            <BodySmall style={styles.metricLabel}>Texture</BodySmall>
-            <Body>{skinScore.texture}</Body>
+            <BodySmall style={styles.metricLabel}>Acne</BodySmall>
+            <Body>{skinScore.acne}</Body>
           </View>
           <View style={styles.metricItem}>
-            <BodySmall style={styles.metricLabel}>Pigmentation</BodySmall>
-            <Body>{skinScore.pigmentation}</Body>
+            <BodySmall style={styles.metricLabel}>Sun Damage</BodySmall>
+            <Body>{skinScore.sunDamage}</Body>
           </View>
           <View style={styles.metricItem}>
-            <BodySmall style={styles.metricLabel}>Sensitivity</BodySmall>
-            <Body>{skinScore.sensitivity}</Body>
+            <BodySmall style={styles.metricLabel}>Dryness</BodySmall>
+            <Body>{skinScore.dryness}</Body>
           </View>
         </View>
       </View>

@@ -55,10 +55,16 @@ export const quizQuestions: QuizQuestion[] = [
 
 export const mockSkinScore: SkinScore = {
   overall: 72,
+  acne: 68,
   hydration: 65,
-  texture: 78,
-  pigmentation: 80,
-  sensitivity: 68,
+  sunDamage: 75,
+  dryness: 70,
+  recommendations: [
+    'Use a gentle cleanser twice daily',
+    'Apply moisturizer while skin is damp',
+    'Use SPF 30+ sunscreen daily'
+  ],
+  issues: []
 };
 
 export const mockRoutineSteps: RoutineStep[] = [

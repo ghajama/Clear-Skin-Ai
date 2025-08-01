@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { StyleSheet, View, ScrollView, TouchableOpacity, SafeAreaView } from "react-native";
+import { StyleSheet, View, ScrollView, TouchableOpacity, SafeAreaView, Text } from "react-native";
 import { H2, H3, Body, BodySmall } from "@/components/ui/Typography";
 import { colors, spacing, borderRadius } from "@/constants/theme";
 import { useSkincare } from "@/hooks/useSkincare";
-import { Check, Info } from "lucide-react-native";
 import { Card } from "@/components/ui/Card";
 
 export default function RoutineScreen() {
@@ -67,7 +66,7 @@ export default function RoutineScreen() {
                       step.completed && styles.checkboxChecked,
                     ]}
                   >
-                    {step.completed && <Check size={16} color={colors.text.light} />}
+                    {step.completed && <Text style={{ fontSize: 20 }}>✅</Text>}
                   </View>
                 </TouchableOpacity>
                 <View style={styles.stepTitleContainer}>

@@ -1,22 +1,21 @@
 import React, { useState, useRef } from "react";
-import { 
-  StyleSheet, 
-  View, 
-  ScrollView, 
-  TextInput, 
-  TouchableOpacity, 
-  KeyboardAvoidingView, 
+import {
+  StyleSheet,
+  View,
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+  KeyboardAvoidingView,
   Platform,
   FlatList,
-  SafeAreaView
+  SafeAreaView,
+  Text
 } from "react-native";
 import { H2, Body } from "@/components/ui/Typography";
 import { colors, spacing, borderRadius } from "@/constants/theme";
 import { useChat } from "@/hooks/useChat";
 import { MessageBubble } from "@/components/chat/MessageBubble";
 import { QuickPrompt } from "@/components/chat/QuickPrompt";
-import { Send } from "lucide-react-native";
-
 export default function ChatScreen() {
   const { messages, loading, sendMessage, availablePrompts } = useChat();
   const [inputText, setInputText] = useState('');
@@ -90,7 +89,7 @@ export default function ChatScreen() {
             onPress={handleSend}
             disabled={!inputText.trim() || loading}
           >
-            <Send size={20} color={inputText.trim() ? colors.text.light : colors.text.secondary} />
+            <Text style={{ fontSize: 20 }}>📤</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

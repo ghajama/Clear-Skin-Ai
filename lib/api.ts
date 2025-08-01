@@ -1,4 +1,8 @@
-const API_BASE_URL = 'https://toolkit.rork.com';
+import Constants from 'expo-constants';
+
+const API_BASE_URL = Constants.expoConfig?.extra?.apiBaseUrl ||
+                    process.env.EXPO_PUBLIC_API_BASE_URL ||
+                    'https://toolkit.rork.com';
 
 export type ContentPart =
   | { type: 'text'; text: string; }

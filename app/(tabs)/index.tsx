@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View, ScrollView, ActivityIndicator, Platform } from "react-native";
+import { StyleSheet, View, ScrollView, ActivityIndicator, Platform, Text } from "react-native";
 import { H2, Body } from "@/components/ui/Typography";
 import { colors, spacing } from "@/constants/theme";
 import { useAuth } from "@/hooks/useAuth";
@@ -24,7 +24,7 @@ export default function HomeScreen() {
   if (loading) {
     return (
       <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={{ fontSize: 20 }}>📊</Text>
       </View>
     );
   }
